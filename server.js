@@ -11,9 +11,9 @@ app.use(express.static("public"));
 io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
-    socket.on("offer", (offer) => {
+    socket.on("offer", ({offer, targetId, callerId}) => {
         console.log("Received offer, sending to receiver...");
-        socket.broadcast.emit("offer", offer);
+        socket.to(targetId).emit("offer",{ offer, callerId });
     });
 
     socket.on("answer", (answer) => {
@@ -24,6 +24,11 @@ io.on("connection", (socket) => {
     socket.on("candidate", (candidate) => {
         console.log("Received ICE candidate, relaying...");
         socket.broadcast.emit("candidate", candidate);
+    });
+
+    socket.on('endCall', () => {
+        console.log('Call Ended');
+        socket.broadcast.emit('endCall');
     });
 
     socket.on("disconnect", () => {
