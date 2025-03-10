@@ -10,15 +10,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-    <h2>Receiver: <span id="socketId"></span></h2>
+    <h2>Receiver (Remote Video)</h2>
     <video id="remoteVideo" autoplay playsinline muted></video>
     <video id="localVideo" autoplay playsinline muted></video>
     <button onclick="startCall()">Start Streaming</button>
 
     <script src="webrtc-support.js"></script>
-    <script src="call-modal.js"></script>
     <script> 
-            socket.on('offer', async ({ offer, callerId }) => {
+            socket.on('offer', async (offer) => {
             peerConnection = new RTCPeerConnection(config);
             peerConnection.ontrack = (event) => {
                 const remoteVideo = document.getElementById("remoteVideo").srcObject = event.streams[0];
@@ -35,28 +34,6 @@
             const answer = await peerConnection.createAnswer();
             await peerConnection.setLocalDescription(answer);
             socket.emit("answer", answer);
-        });
-
-        function stopCall(){
-            if (peerConnection) {
-                const localstream = document.getElementById("localVideo").srcObject;
-                const remoteStream = document.getElementById("localVideo").srcObject;
-                if (localstream) {
-                    localstream.getTracks().forEach(track => track.stop());
-                    document.getElementById("localVideo").srcObject = null;
-                }
-                if (remoteStream) {
-                    remoteStream.getTracks().forEach(track => track.stop());
-                    document.getElementById("remoteVideo").srcObject = null;
-                }
-                peerConnection.close();
-                peerConnection = null;
-            }
-            socket.emit("endCall");
-         }
-         
-        socket.on('endCall', () => {
-            stopCall();
         });
     </script>
     

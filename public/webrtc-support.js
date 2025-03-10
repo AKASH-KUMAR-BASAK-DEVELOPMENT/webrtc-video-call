@@ -2,21 +2,25 @@ const socket = io();
 let peerConnection;
 const config = {
     iceServers: [
-        {
-            urls: [
-                'turn:13.211.123.234:3478',      // Replace with your TURN server IP and port
-                'turns:13.211.123.234:5349'      // Secure TURN (TLS)
-            ],
-            username: "dummyuser",   // Same dummy username
-            credential: "dummyPassword"  // Same dummy password
+        { urls: "stun:stun.l.google.com:19302" }, // Google's Free STUN Server
+        { urls: "stun:bn-turn1.xirsys.com" }, // Xirsys STUN Server
+        { 
+        username: "OeOo5cLFA1JwcbpHhuQSfMFWzjaWxstmwcQi774fJo5RLCiUqOFkRRQ7Kes3ALyUAAAAAGel9bNBS0FTSC1Y",
+        credential: "072fd90a-e54b-11ef-ac67-0242ac140004",
+        urls: [
+            "turn:bn-turn1.xirsys.com:80?transport=udp",
+            "turn:bn-turn1.xirsys.com:3478?transport=udp",
+            "turn:bn-turn1.xirsys.com:80?transport=tcp",
+            "turn:bn-turn1.xirsys.com:3478?transport=tcp",
+            "turns:bn-turn1.xirsys.com:443?transport=tcp",
+            "turns:bn-turn1.xirsys.com:5349?transport=tcp"
+        ]
         }
     ]
-};
-
+    };
 
     async function startCall() {
         try {
-            let targetId = prompt('Socket id: ');
             peerConnection = new RTCPeerConnection(config);
             
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -31,12 +35,12 @@ const config = {
 
             const offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
-            let socketId = socket.id;
-            socket.emit('offer', {offer, targetId, callerId: socketId});
+            socket.emit('offer', offer);
             } catch (error) {
                 console.error("Error accessing camera and microphone:", error);
             }
     }
+
 
     socket.on('answer', async (answer) => {
         await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
@@ -44,8 +48,4 @@ const config = {
     
     socket.on('candidate', (candidate) => {
         peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-    });
-
-    socket.on("connect", () => {
-        document.getElementById("socketId").innerText = socket.id;
     });
