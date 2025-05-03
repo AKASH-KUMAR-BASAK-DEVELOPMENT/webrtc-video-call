@@ -1,9 +1,15 @@
+const fs = require("fs");
 const express = require("express");
-const http = require("http");
+const https = require("https");
 const { Server } = require("socket.io");
 
 const app = express();
-const server = http.createServer(app);
+
+const server = https.createServer({
+    key: fs.readFileSync('key.pem'),
+    cert: fs.readFileSync('cert.pem'),
+}, app);
+
 const io = new Server(server);
 
 app.use(express.static("public"));
